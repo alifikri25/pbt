@@ -97,15 +97,6 @@ export default function PhotoboothInterface({
         const canvas = canvasRef.current;
         if (!canvas || !selectedFrame) return;
 
-        const canvasWidth = 512;
-        const canvasHeight = 768;
-        canvas.width = canvasWidth;
-        canvas.height = canvasHeight;
-        const ctx = canvas.getContext('2d');
-
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-
         const loadImage = (src) => {
             return new Promise((resolve, reject) => {
                 const img = new Image();
@@ -116,7 +107,28 @@ export default function PhotoboothInterface({
             });
         };
 
-        const slots = getPhotoSlots(selectedFrame, canvasWidth, canvasHeight);
+        let frameImg;
+        try {
+            frameImg = await loadImage(getFrameImage(selectedFrame));
+        } catch (e) {
+            console.error('Error loading frame:', e);
+            return;
+        }
+
+        const canvasWidth = frameImg.width;
+        const canvasHeight = frameImg.height;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        const ctx = canvas.getContext('2d');
+
+        ctx.drawImage(frameImg, 0, 0);
+
+        const slots = selectedFrame.photoSlots.map(slot => ({
+            x: (slot.x / 512) * canvasWidth,
+            y: (slot.y / 512) * canvasHeight,
+            width: (slot.width / 512) * canvasWidth,
+            height: (slot.height / 512) * canvasHeight,
+        }));
 
         for (let i = 0; i < photos.length && i < slots.length; i++) {
             const slot = slots[i];
@@ -125,7 +137,7 @@ export default function PhotoboothInterface({
 
                 ctx.save();
                 ctx.beginPath();
-                ctx.roundRect(slot.x, slot.y, slot.width, slot.height, 8);
+                ctx.roundRect(slot.x, slot.y, slot.width, slot.height, 4);
                 ctx.clip();
 
                 const imgAspect = img.width / img.height;
@@ -150,13 +162,6 @@ export default function PhotoboothInterface({
             } catch (e) {
                 console.error('Error loading photo:', e);
             }
-        }
-
-        try {
-            const frameImg = await loadImage(getFrameImage(selectedFrame));
-            ctx.drawImage(frameImg, 0, 0, canvasWidth, canvasHeight);
-        } catch (e) {
-            console.error('Error loading frame:', e);
         }
 
         const finalImage = canvas.toDataURL('image/png');
