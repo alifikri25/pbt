@@ -16,7 +16,6 @@ export default function App() {
 
     const [selectedFrame, setSelectedFrame] = useState(FRAMES[0]);
     const [selectedCategory, setSelectedCategory] = useState('All');
-    const [selectedLayout, setSelectedLayout] = useState('1x1');
 
     const [countdownEnabled, setCountdownEnabled] = useState(true);
     const [flashEnabled, setFlashEnabled] = useState(true);
@@ -95,11 +94,11 @@ export default function App() {
 
     const handleDownload = useCallback((imageData) => {
         const link = document.createElement('a');
-        link.download = `photobooth_${selectedLayout}_${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
+        link.download = `photobooth_${new Date().toISOString().replace(/[:.]/g, '-')}.png`;
         link.href = imageData || capturedPhoto;
         link.click();
         showToast('Photo downloaded!');
-    }, [capturedPhoto, selectedLayout, showToast]);
+    }, [capturedPhoto, showToast]);
 
     const handleDelete = useCallback((key) => {
         storage.deletePhoto(key);
@@ -140,8 +139,6 @@ export default function App() {
                     setSelectedCategory={setSelectedCategory}
                     selectedFrame={selectedFrame}
                     setSelectedFrame={setSelectedFrame}
-                    selectedLayout={selectedLayout}
-                    setSelectedLayout={setSelectedLayout}
                     countdownEnabled={countdownEnabled}
                     setCountdownEnabled={setCountdownEnabled}
                     flashEnabled={flashEnabled}
